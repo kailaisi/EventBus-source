@@ -18,8 +18,7 @@ package org.greenrobot.eventbus;
 import java.util.logging.Level;
 
 /**
- * Posts events in background.
- *
+ *发送到非主线程发送消息使用的poster
  * @author Markus
  */
 final class BackgroundPoster implements Runnable, Poster {
@@ -35,11 +34,13 @@ final class BackgroundPoster implements Runnable, Poster {
     }
 
     public void enqueue(Subscription subscription, Object event) {
+        //从线程池获取一个PendingPost对象
         PendingPost pendingPost = PendingPost.obtainPendingPost(subscription, event);
         synchronized (this) {
             queue.enqueue(pendingPost);
             if (!executorRunning) {
                 executorRunning = true;
+                //通过线程池方案调度执行当前类中的run方法
                 eventBus.getExecutorService().execute(this);
             }
         }

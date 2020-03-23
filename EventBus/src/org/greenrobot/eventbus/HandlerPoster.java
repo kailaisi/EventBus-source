@@ -21,13 +21,14 @@ import android.os.Message;
 import android.os.SystemClock;
 
 public class HandlerPoster extends Handler implements Poster {
-
+    //消息队列
     private final PendingPostQueue queue;
     private final int maxMillisInsideHandleMessage;
     private final EventBus eventBus;
     private boolean handlerActive;
 
     protected HandlerPoster(EventBus eventBus, Looper looper, int maxMillisInsideHandleMessage) {
+        //这里的looper是主线程的looper
         super(looper);
         this.eventBus = eventBus;
         this.maxMillisInsideHandleMessage = maxMillisInsideHandleMessage;
@@ -35,12 +36,14 @@ public class HandlerPoster extends Handler implements Poster {
     }
 
     public void enqueue(Subscription subscription, Object event) {
+        //防止频发的发送消息，这里通过线程池进行了一下消息的处理，削峰操作。并将消息和订阅者进行了包装
         PendingPost pendingPost = PendingPost.obtainPendingPost(subscription, event);
         synchronized (this) {
+            //入队
             queue.enqueue(pendingPost);
             if (!handlerActive) {
                 handlerActive = true;
-                if (!sendMessage(obtainMessage())) {
+                if (!sendMessage(obtainMessage())) {//发送handler消息
                     throw new EventBusException("Could not send handler message");
                 }
             }
@@ -56,7 +59,7 @@ public class HandlerPoster extends Handler implements Poster {
                 PendingPost pendingPost = queue.poll();
                 if (pendingPost == null) {
                     synchronized (this) {
-                        // Check again, this time in synchronized
+                        // 双重检测，里面使用了线程安全处理
                         pendingPost = queue.poll();
                         if (pendingPost == null) {
                             handlerActive = false;
@@ -64,6 +67,7 @@ public class HandlerPoster extends Handler implements Poster {
                         }
                     }
                 }
+                //调用订阅者方法
                 eventBus.invokeSubscriber(pendingPost);
                 long timeInMethod = SystemClock.uptimeMillis() - started;
                 if (timeInMethod >= maxMillisInsideHandleMessage) {

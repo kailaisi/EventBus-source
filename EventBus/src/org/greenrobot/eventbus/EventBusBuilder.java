@@ -30,7 +30,9 @@ import java.util.concurrent.Executors;
  * Create a new builder using {@link EventBus#builder()}.
  */
 @SuppressWarnings("unused")
+//默认的EventBus创建时，使用的Builder，里面初始化了一些设置信息
 public class EventBusBuilder {
+    //创建一个可缓存线程池，如果线程池长度超过处理需要，可灵活回收空闲线程
     private final static ExecutorService DEFAULT_EXECUTOR_SERVICE = Executors.newCachedThreadPool();
 
     boolean logSubscriberExceptions = true;

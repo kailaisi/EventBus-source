@@ -26,6 +26,9 @@ public interface MainThreadSupport {
 
     Poster createPoster(EventBus eventBus);
 
+    /**
+     * 安卓使用的主线程
+     */
     class AndroidHandlerMainThreadSupport implements MainThreadSupport {
 
         private final Looper looper;

@@ -19,11 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class PendingPost {
+    ////全局用来缓存任务的数组
     private final static List<PendingPost> pendingPostPool = new ArrayList<PendingPost>();
 
     Object event;
-    Subscription subscription;
-    PendingPost next;
+    Subscription subscription;//订阅者
+    PendingPost next;//下一条
 
     private PendingPost(Object event, Subscription subscription) {
         this.event = event;
@@ -31,7 +32,7 @@ final class PendingPost {
     }
 
     static PendingPost obtainPendingPost(Subscription subscription, Object event) {
-        synchronized (pendingPostPool) {
+        synchronized (pendingPostPool) {//从缓存池中获取一个PendingPost结构体
             int size = pendingPostPool.size();
             if (size > 0) {
                 PendingPost pendingPost = pendingPostPool.remove(size - 1);
@@ -48,7 +49,7 @@ final class PendingPost {
         pendingPost.event = null;
         pendingPost.subscription = null;
         pendingPost.next = null;
-        synchronized (pendingPostPool) {
+        synchronized (pendingPostPool) {//将释放的pendingpost放回缓存池，并将线程池填满10000个数据
             // Don't let the pool grow indefinitely
             if (pendingPostPool.size() < 10000) {
                 pendingPostPool.add(pendingPost);

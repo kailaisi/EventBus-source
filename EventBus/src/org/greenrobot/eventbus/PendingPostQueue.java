@@ -15,7 +15,7 @@
  */
 
 package org.greenrobot.eventbus;
-
+//发送的消息使用的队列，使用2个，先入先出的队列样式
 final class PendingPostQueue {
     private PendingPost head;
     private PendingPost tail;
